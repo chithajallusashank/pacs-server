@@ -1,4 +1,4 @@
-package com.application.pacs.payload;
+package com.application.pacs.payload.security;
 
 /**
  * Created by rajeevkumarsingh on 19/08/17.

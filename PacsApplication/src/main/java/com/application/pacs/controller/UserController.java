@@ -2,7 +2,12 @@ package com.application.pacs.controller;
 
 import com.application.pacs.exception.ResourceNotFoundException;
 import com.application.pacs.model.User;
-import com.application.pacs.payload.*;
+import com.application.pacs.payload.ApiResponse;
+import com.application.pacs.payload.PagedResponse;
+import com.application.pacs.payload.PollResponse;
+import com.application.pacs.payload.users.UserProfile;
+import com.application.pacs.payload.users.UserIdentityAvailability;
+import com.application.pacs.payload.users.UserSummary;
 import com.application.pacs.repository.PollRepository;
 import com.application.pacs.repository.UserRepository;
 import com.application.pacs.repository.VoteRepository;
@@ -11,11 +16,16 @@ import com.application.pacs.security.UserPrincipal;
 import com.application.pacs.service.PollService;
 import com.application.pacs.util.AppConstants;
 
+import java.net.URI;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api")
@@ -46,6 +56,20 @@ public class UserController {
     public UserIdentityAvailability checkUsernameAvailability(@RequestParam(value = "username") String username) {
         Boolean isAvailable = !userRepository.existsByUsername(username);
         return new UserIdentityAvailability(isAvailable);
+    }
+    
+    
+   // @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/user/enabledisableUsername")
+    public ResponseEntity<?> disableUsername(@RequestParam(value = "username") String username,
+    												@RequestParam(value = "enable") Boolean enable) {
+        int updatedRecord = userRepository.enabledisableUsername(username,enable);
+       
+        if(updatedRecord>0)
+       return new ResponseEntity(new ApiResponse(true, "Username has been disabled!"),
+                HttpStatus.OK);
+       return new ResponseEntity(new ApiResponse(false, "Username disable failed!"),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @GetMapping("/user/checkEmailAvailability")

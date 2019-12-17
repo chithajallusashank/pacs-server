@@ -1,4 +1,4 @@
-package com.application.pacs.payload;
+package com.application.pacs.payload.users;
 
 import java.time.Instant;
 

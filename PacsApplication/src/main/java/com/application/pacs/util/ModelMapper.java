@@ -4,7 +4,7 @@ import com.application.pacs.model.Poll;
 import com.application.pacs.model.User;
 import com.application.pacs.payload.ChoiceResponse;
 import com.application.pacs.payload.PollResponse;
-import com.application.pacs.payload.UserSummary;
+import com.application.pacs.payload.users.UserSummary;
 
 import java.time.Instant;
 import java.util.List;

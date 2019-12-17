@@ -1,9 +1,9 @@
-package com.application.pacs.payload;
+package com.application.pacs.payload.organization;
 
-public class UserIdentityAvailability {
+public class OrganizationIdentityAvailability {
     private Boolean available;
 
-    public UserIdentityAvailability(Boolean available) {
+    public OrganizationIdentityAvailability(Boolean available) {
         this.available = available;
     }
 

@@ -5,9 +5,9 @@ import com.application.pacs.model.Role;
 import com.application.pacs.model.RoleName;
 import com.application.pacs.model.User;
 import com.application.pacs.payload.ApiResponse;
-import com.application.pacs.payload.JwtAuthenticationResponse;
-import com.application.pacs.payload.LoginRequest;
-import com.application.pacs.payload.SignUpRequest;
+import com.application.pacs.payload.security.JwtAuthenticationResponse;
+import com.application.pacs.payload.security.LoginRequest;
+import com.application.pacs.payload.security.SignUpRequest;
 import com.application.pacs.repository.RoleRepository;
 import com.application.pacs.repository.UserRepository;
 import com.application.pacs.security.JwtTokenProvider;
@@ -84,6 +84,8 @@ public class AuthController {
             return new ResponseEntity(new ApiResponse(false, "Phone number already in use!"),
                     HttpStatus.BAD_REQUEST);
         }
+        
+        
 
         // Creating user's account
         User user = new User(signUpRequest.getName(), signUpRequest.getUsername(),

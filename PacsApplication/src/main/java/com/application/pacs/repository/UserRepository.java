@@ -1,7 +1,11 @@
 package com.application.pacs.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.application.pacs.model.User;
 
@@ -25,4 +29,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Boolean existsByEmail(String email);
     Boolean existsByPhonenumber(Long phonenumber);
+    
+    
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE users u set u.userenabled =:enable where u.username = :username",
+            nativeQuery = true)
+int enabledisableUsername(@Param("username") String username, @Param("enable") boolean enable);
 }

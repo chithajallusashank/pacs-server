@@ -1,5 +1,6 @@
 package com.application.pacs.payload;
 
+import com.application.pacs.payload.users.UserSummary;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.Instant;
