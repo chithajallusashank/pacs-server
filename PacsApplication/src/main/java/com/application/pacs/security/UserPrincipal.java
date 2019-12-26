@@ -17,6 +17,7 @@ public class UserPrincipal implements UserDetails {
     private String name;
 
     private String username;
+    private String organizationcode;
     private Boolean userenabled;
 
     @JsonIgnore
@@ -30,10 +31,11 @@ public class UserPrincipal implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserPrincipal(Long id, String name, String username, String email, String password,Long phonenumber,Boolean userenabled, Collection<? extends GrantedAuthority> authorities) {
+    public UserPrincipal(Long id, String name, String username, String organizationcode,String email, String password,Long phonenumber,Boolean userenabled, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.name = name;
         this.username = username;
+        this.organizationcode = organizationcode;
         this.email = email;
         this.phonenumber=phonenumber;
         this.userenabled=userenabled;
@@ -41,6 +43,9 @@ public class UserPrincipal implements UserDetails {
         this.authorities = authorities;
     }
 
+    
+    
+    
     public static UserPrincipal create(User user) {
         List<GrantedAuthority> authorities = user.getRoles().stream().map(role ->
                 new SimpleGrantedAuthority(role.getName().name())
@@ -50,6 +55,7 @@ public class UserPrincipal implements UserDetails {
                 user.getId(),
                 user.getName(),
                 user.getUsername(),
+                user.getOrganizationcode(),
                 user.getEmail(),
                 user.getPassword(),
                 user.getPhonenumber(),
@@ -77,7 +83,9 @@ public class UserPrincipal implements UserDetails {
     public String getUsername() {
         return username;
     }
-    
+    public String getOrganizationcode() {
+        return organizationcode;
+    }
     
     
 

@@ -5,5 +5,9 @@ package com.application.pacs.model;
  */
 public enum  RoleName {
     ROLE_USER,
+    ROLE_DOCTOR,
+    ROLE_DOC_ASSISTANT,
+    ROLE_UPLOADER,
+    ROLE_REPORT_VIEWER,
     ROLE_ADMIN
 }

@@ -59,7 +59,7 @@ public class UserController {
     }
     
     
-   // @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/user/enabledisableUsername")
     public ResponseEntity<?> disableUsername(@RequestParam(value = "username") String username,
     												@RequestParam(value = "enable") Boolean enable) {

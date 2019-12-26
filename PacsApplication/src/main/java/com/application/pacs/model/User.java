@@ -41,6 +41,14 @@ public class User extends DateAudit {
     @Size(max = 15)
     private String username;
     
+    @NotBlank
+    @Size(max = 15)
+    private String organizationcode;
+    
+    //@NotBlank
+    @Size(max = 50)
+    private String signature;// need to add signature to payload and other areas to capture and save it
+    
     @NaturalId
     @NotBlank
     @Size(max = 40)
@@ -62,14 +70,22 @@ public class User extends DateAudit {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_organizations",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "organization_id"))
+    private Organization organization = new Organization();
+    
 
     public User() {
 
     }
 
-    public User(String name, String username, String email, String password,Long phonenumber,Boolean userenabled) {
+    public User(String name, String username,String organizationcode, String email, String password,Long phonenumber,Boolean userenabled) {
         this.name = name;
         this.username = username;
+        this.organizationcode=organizationcode;
         this.email = email;
         this.password = password;
         this.userenabled=userenabled;
@@ -92,6 +108,13 @@ public class User extends DateAudit {
         this.username = username;
     }
 
+    public String getOrganizationcode() {
+        return organizationcode;
+    }
+
+    public void setOrganizationcode(String organizationcode) {
+        this.organizationcode = organizationcode;
+    }
     public String getName() {
         return name;
     }
@@ -139,4 +162,12 @@ public class User extends DateAudit {
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }
+	
 }

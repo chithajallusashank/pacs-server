@@ -1,6 +1,7 @@
 package com.application.pacs.controller;
 
 import com.application.pacs.exception.AppException;
+import com.application.pacs.model.Organization;
 import com.application.pacs.model.Role;
 import com.application.pacs.model.RoleName;
 import com.application.pacs.model.User;
@@ -8,6 +9,7 @@ import com.application.pacs.payload.ApiResponse;
 import com.application.pacs.payload.security.JwtAuthenticationResponse;
 import com.application.pacs.payload.security.LoginRequest;
 import com.application.pacs.payload.security.SignUpRequest;
+import com.application.pacs.repository.OrganizationRepository;
 import com.application.pacs.repository.RoleRepository;
 import com.application.pacs.repository.UserRepository;
 import com.application.pacs.security.JwtTokenProvider;
@@ -42,6 +44,10 @@ public class AuthController {
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    OrganizationRepository organizationRepository;
+    
+
 
     @Autowired
     RoleRepository roleRepository;
@@ -85,10 +91,17 @@ public class AuthController {
                     HttpStatus.BAD_REQUEST);
         }
         
+        if(!organizationRepository.existsByOrganizationcode(signUpRequest.getOrganizationcode())) {
+            return new ResponseEntity(new ApiResponse(false, "Organization code doesnt exist in the system!"),
+                    HttpStatus.BAD_REQUEST);
+        }
+        
+       
+        
         
 
         // Creating user's account
-        User user = new User(signUpRequest.getName(), signUpRequest.getUsername(),
+        User user = new User(signUpRequest.getName(), signUpRequest.getUsername(),signUpRequest.getOrganizationcode(),
                 signUpRequest.getEmail(),signUpRequest.getPassword(),signUpRequest.getPhonenumber(),true); //user enabled flag default is true for signup requests
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -97,6 +110,8 @@ public class AuthController {
                 .orElseThrow(() -> new AppException("User Role not set."));
 
         user.setRoles(Collections.singleton(userRole));
+        Organization org=organizationRepository.findByOrganizationcode(signUpRequest.getOrganizationcode()).orElseThrow(() -> new AppException("Organization code not found."));
+      user.setOrganization(org);
 
         User result = userRepository.save(user);
 
@@ -106,4 +121,10 @@ public class AuthController {
 
         return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
     }
+    
+    
+    
+    
+    
+    
 }

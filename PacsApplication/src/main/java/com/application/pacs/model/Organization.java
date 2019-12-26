@@ -18,7 +18,7 @@ import java.util.Set;
 @Entity
 @Table(name = "organizations", uniqueConstraints = {
         @UniqueConstraint(columnNames = {
-            "organizationname"
+            "organizationcode"
         }),
         @UniqueConstraint(columnNames = {
             "email"
@@ -53,25 +53,17 @@ public class Organization extends DateAudit {
    
     private Boolean organizationenabled=true;
     
-    @NotBlank
-    @Size(max = 100)
-    private String password;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "organization_user",
-            joinColumns = @JoinColumn(name = "organization_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<User> users = new HashSet<>();
 
+  
     public Organization() {
 
     }
 
-    public Organization(String organizationname, String organizationcode, String email, String password,Long phonenumber,Boolean organizationenabled) {
+    public Organization(String organizationname, String organizationcode, String email, Long phonenumber,Boolean organizationenabled) {
         this.organizationname = organizationname;
         this.organizationcode = organizationcode;
         this.email = email;
-        this.password = password;
         this.organizationenabled=organizationenabled;
         this.phonenumber = phonenumber;
     }
@@ -124,19 +116,4 @@ public class Organization extends DateAudit {
         this.phonenumber = phonenumber;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Set<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(Set<User> users) {
-        this.users = users;
-    }
 }

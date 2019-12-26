@@ -16,6 +16,10 @@ public class SignUpRequest {
     private String username;
 
     @NotBlank
+    @Size(min = 3, max = 15)
+    private String organizationcode;
+    
+    @NotBlank
     @Size(max = 40)
     @Email
     private String email;
@@ -43,6 +47,14 @@ public class SignUpRequest {
         this.username = username;
     }
 
+    
+    public String getOrganizationcode() {
+        return organizationcode;
+    }
+
+    public void setOrganizationcode(String organizationcode) {
+        this.organizationcode = organizationcode;
+    }
     public Long getPhonenumber() {
         return phonenumber;
     }

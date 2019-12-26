@@ -42,9 +42,5 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
 			@Param("enable") boolean enable);
 
 	
-	 @Transactional
-	 @Modifying(clearAutomatically = true)
-	 @Query("SELECT o FROM Organization o where o.User.") Optional<Organization>
-	  findByUserId(@Param("userId") String userId); //need to correct the function
-	 
+	
 }
