@@ -12,8 +12,12 @@ import com.application.pacs.payload.security.SignUpRequest;
 import com.application.pacs.repository.OrganizationRepository;
 import com.application.pacs.repository.RoleRepository;
 import com.application.pacs.repository.UserRepository;
+import com.application.pacs.security.CurrentUser;
 import com.application.pacs.security.JwtTokenProvider;
+import com.application.pacs.security.UserPrincipal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +26,36 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.HttpMethod;
+import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.AccessControlList;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.CanonicalGrantee;
+import com.amazonaws.services.s3.model.CreateBucketRequest;
+import com.amazonaws.services.s3.model.EmailAddressGrantee;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.services.s3.model.Grant;
+import com.amazonaws.services.s3.model.GroupGrantee;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.Permission;
+import com.amazonaws.services.s3.model.S3Object;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 
 /**
@@ -39,92 +65,114 @@ import java.util.Collections;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+	@Autowired
+	AuthenticationManager authenticationManager;
 
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    OrganizationRepository organizationRepository;
-    
+	@Autowired
+	UserRepository userRepository;
+	@Autowired
+	OrganizationRepository organizationRepository;
 
+	@Autowired
+	RoleRepository roleRepository;
 
-    @Autowired
-    RoleRepository roleRepository;
+	@Autowired
+	PasswordEncoder passwordEncoder;
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
+	@Autowired
+	JwtTokenProvider tokenProvider;
 
-    @Autowired
-    JwtTokenProvider tokenProvider;
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+	@GetMapping("/getAWSURL")
+	public ResponseEntity<?> getAWSURL(@CurrentUser UserPrincipal currentUser,
+			@RequestParam(value = "objectname") String objectname,
+			@RequestParam(value = "contentType") String contentType) {
+		logger.info("User :" + currentUser + " trying to retrieve AWS signed URL");
+		Regions clientRegion = Regions.AP_SOUTH_1;
+		String bucketName = "panacea-pacs-app-test";
+		ProfileCredentialsProvider profile = new ProfileCredentialsProvider("AWS_S3_Profile.conf", "default");
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsernameOrEmail(),
-                        loginRequest.getPassword()
-                )
-        );
+		logger.info("access key id is :" + profile.getCredentials().getAWSAccessKeyId() + "::");
+		logger.info("secret key is :" + profile.getCredentials().getAWSSecretKey() + "::");
+		logger.info("File name is" + objectname);
+		logger.info("content type is" + contentType);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+		AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withCredentials(profile).withRegion(clientRegion).build();
+	
+		java.util.Date expiration = new java.util.Date();
+		long expTimeMillis = expiration.getTime();
+		expTimeMillis += 1000 * 240;
+		expiration.setTime(expTimeMillis);
 
-        String jwt = tokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
-    }
+		System.out.println("Generating pre-signed URL.");
+		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName,
+				objectname).withMethod(HttpMethod.PUT).withContentType(contentType).withExpiration(expiration);
+		URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
+		logger.info("PResigned URL genereated is" + url);
+		return ResponseEntity.ok(url);
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
-        if(userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return new ResponseEntity(new ApiResponse(false, "Username is already taken!"),
-                    HttpStatus.BAD_REQUEST);
-        }
+	}
 
-        if(userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"),
-                    HttpStatus.BAD_REQUEST);
-        }
-        
-        if(userRepository.existsByPhonenumber(signUpRequest.getPhonenumber())) {
-            return new ResponseEntity(new ApiResponse(false, "Phone number already in use!"),
-                    HttpStatus.BAD_REQUEST);
-        }
-        
-        if(!organizationRepository.existsByOrganizationcode(signUpRequest.getOrganizationcode())) {
-            return new ResponseEntity(new ApiResponse(false, "Organization code doesnt exist in the system!"),
-                    HttpStatus.BAD_REQUEST);
-        }
-        
-       
-        
-        
+	@PostMapping("/signin")
+	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
-        // Creating user's account
-        User user = new User(signUpRequest.getName(), signUpRequest.getUsername(),signUpRequest.getOrganizationcode(),
-                signUpRequest.getEmail(),signUpRequest.getPassword(),signUpRequest.getPhonenumber(),true); //user enabled flag default is true for signup requests
+		Authentication authentication = authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(loginRequest.getUsernameOrEmail(), loginRequest.getPassword()));
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+		SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
-                .orElseThrow(() -> new AppException("User Role not set."));
+		String jwt = tokenProvider.generateToken(authentication);
+		return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+	}
 
-        user.setRoles(Collections.singleton(userRole));
-        Organization org=organizationRepository.findByOrganizationcode(signUpRequest.getOrganizationcode()).orElseThrow(() -> new AppException("Organization code not found."));
-      user.setOrganization(org);
+	@PostMapping("/signup")
+	public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
+		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+			return new ResponseEntity(new ApiResponse(false, "Username is already taken!"), HttpStatus.BAD_REQUEST);
+		}
 
-        User result = userRepository.save(user);
+		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+			return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"), HttpStatus.BAD_REQUEST);
+		}
 
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentContextPath().path("/users/{username}")
-                .buildAndExpand(result.getUsername()).toUri();
+		if (userRepository.existsByPhonenumber(signUpRequest.getPhonenumber())) {
+			return new ResponseEntity(new ApiResponse(false, "Phone number already in use!"), HttpStatus.BAD_REQUEST);
+		}
 
-        return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
-    }
-    
-    
-    
-    
-    
-    
+		if (!organizationRepository.existsByOrganizationcode(signUpRequest.getOrganizationcode())) {
+			return new ResponseEntity(new ApiResponse(false, "Organization code doesnt exist in the system!"),
+					HttpStatus.BAD_REQUEST);
+		}
+
+		// Creating user's account
+		User user = new User(signUpRequest.getName(), signUpRequest.getUsername(), signUpRequest.getOrganizationcode(),
+				signUpRequest.getEmail(), signUpRequest.getPassword(), signUpRequest.getPhonenumber(), true); // user
+																												// enabled
+																												// flag
+																												// default
+																												// is
+																												// true
+																												// for
+																												// signup
+																												// requests
+
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+		Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
+				.orElseThrow(() -> new AppException("User Role not set."));
+
+		user.setRoles(Collections.singleton(userRole));
+		Organization org = organizationRepository.findByOrganizationcode(signUpRequest.getOrganizationcode())
+				.orElseThrow(() -> new AppException("Organization code not found."));
+		user.setOrganization(org);
+
+		User result = userRepository.save(user);
+
+		URI location = ServletUriComponentsBuilder.fromCurrentContextPath().path("/users/{username}")
+				.buildAndExpand(result.getUsername()).toUri();
+
+		return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
+	}
+
 }
