@@ -23,34 +23,36 @@ import java.util.Set;
 
 public class Case extends DateAudit {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @NotBlank
-    @Size(max = 100)
-    private String filename;
+    @Size(max = 150)
+    private String patientname;
 
     @NotBlank
-    @Size(max = 15)
+    @Size(max = 200)
     private String fileuri;
     
-    @NotBlank
-    @Size(max = 15)
+    
+    @Enumerated(EnumType.STRING)
     private CaseType casetype;
     
     @Lob
     private String filereport;
     
+  private String patienthistory;
   
+  private String patientid;
     
     @Size(max = 40)
     private String signatureuri;
     
-    @NotBlank
+   
     @Enumerated(EnumType.STRING)
     private CaseStatus casestatus;
     
-    @NotBlank
+
     private Boolean emergency;
    
     
@@ -63,14 +65,14 @@ public class Case extends DateAudit {
 
     }
 
-    public Case(String filename, String fileuri,String filereport, String signatureuri, CaseStatus casestatus,Boolean emergency) {
-        this.filename = filename;
+    public Case(String patientname, String fileuri,CaseType casetype, String patienthistory, String patientid,Boolean emergency) {
+        this.patientname = patientname;
         this.fileuri = fileuri;
-        this.filereport=filereport;
         this.casetype=casetype;
-        this.signatureuri = signatureuri;
-        this.casestatus = casestatus;
+        this.patienthistory = patienthistory;
+        this.patientid = patientid;
         this.emergency=emergency;
+        this.casestatus=CaseStatus.CASESTATUS_OPEN;
        
     }
 
@@ -82,12 +84,20 @@ public class Case extends DateAudit {
         this.id = id;
     }
 
-    public String getFilename() {
-        return filename;
+    public String getPatientname() {
+        return patientname;
     }
 
-    public void setFilename(String filename) {
-        this.filename = filename;
+    public void setPatientname(String patientname) {
+        this.patientname = patientname;
+    }
+    
+    public String getPatientid() {
+        return patientid;
+    }
+
+    public void setPatientid(String patientid) {
+        this.patientid = patientid;
     }
 
     public String getFileuri() {
@@ -98,7 +108,13 @@ public class Case extends DateAudit {
         this.fileuri = fileuri;
     }
     
-    
+    public String getPatienthistory() {
+        return patienthistory;
+    }
+
+    public void setPatienthistory(String patienthistory) {
+        this.patienthistory = patienthistory;
+    }
     
     public CaseType getCasetype() {
         return casetype;

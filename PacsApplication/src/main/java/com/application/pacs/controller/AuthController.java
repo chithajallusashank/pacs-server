@@ -88,9 +88,10 @@ public class AuthController {
 	public ResponseEntity<?> getAWSURL(@CurrentUser UserPrincipal currentUser,
 			@RequestParam(value = "objectname") String objectname,
 			@RequestParam(value = "contentType") String contentType) {
-		logger.info("User :" + currentUser + " trying to retrieve AWS signed URL");
+		logger.info("User :" + currentUser.getUsername() + " trying to retrieve AWS signed URL for:"+objectname);
 		Regions clientRegion = Regions.AP_SOUTH_1;
-		String bucketName = "panacea-pacs-app-test";
+		logger.info("Organization code of current user is"+currentUser.getOrganizationcode());
+		String bucketName = "panacea-pacs-app-test/"+currentUser.getOrganizationcode()+"/"+currentUser.getUsername();
 		ProfileCredentialsProvider profile = new ProfileCredentialsProvider("AWS_S3_Profile.conf", "default");
 
 		logger.info("access key id is :" + profile.getCredentials().getAWSAccessKeyId() + "::");
@@ -109,7 +110,9 @@ public class AuthController {
 		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName,
 				objectname).withMethod(HttpMethod.PUT).withContentType(contentType).withExpiration(expiration);
 		URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
+		URL publicURL=s3Client.getUrl(bucketName, "");
 		logger.info("PResigned URL genereated is" + url);
+		logger.info("Public URL genereated is" + publicURL+objectname);
 		return ResponseEntity.ok(url);
 
 	}

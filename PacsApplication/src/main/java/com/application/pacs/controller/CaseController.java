@@ -1,14 +1,18 @@
 package com.application.pacs.controller;
 
 import com.application.pacs.exception.AppException;
+import com.application.pacs.payload.cases.AddCase;
 import com.application.pacs.exception.ResourceNotFoundException;
 import com.application.pacs.model.Case;
+import com.application.pacs.model.CaseLog;
+import com.application.pacs.model.CaseStatus;
 import com.application.pacs.model.CaseType;
 import com.application.pacs.model.Organization;
 import com.application.pacs.model.Role;
 import com.application.pacs.model.RoleName;
 import com.application.pacs.model.User;
 import com.application.pacs.payload.ApiResponse;
+import com.application.pacs.payload.cases.AddCaseResponse;
 import com.application.pacs.payload.cases.CaseTypes;
 import com.application.pacs.payload.users.UserSummary;
 import com.application.pacs.payload.organization.OrganizationCreateRequest;
@@ -55,6 +59,38 @@ public class CaseController {
     	logger.info("User "+currentUser+" requested case types");
     	logger.debug("Returning case types"+CaseType.values());    	
     	return Arrays.asList(CaseType.values());
+    }
+    
+    
+    @PostMapping("/addcase")
+    @PreAuthorize("hasRole('USER')")
+    public AddCaseResponse AddCase(@CurrentUser UserPrincipal currentUser,@Valid @RequestBody AddCase addCaseRequest) {
+    	logger.info("User - "+currentUser.getUsername()+" - posted add case request for "+addCaseRequest.getCasetype());   	
+    	Case newCase=new Case(addCaseRequest.getPatientname(), addCaseRequest.getFileuri(),addCaseRequest.getCasetype(), addCaseRequest.getPatienthistory(), addCaseRequest.getPatientid(),addCaseRequest.getEmergency());
+    	AddCaseResponse response= new AddCaseResponse();
+    	Case result = new Case();
+    	CaseLog caselog=new CaseLog(currentUser.getUsername(),"Added a new case", CaseStatus.CASESTATUS_OPEN);
+    	
+    	newCase.setCaselogs(Collections.singleton(caselog));
+    	try {
+    	 result = caseRepository.save(newCase);
+    	}catch (Exception e)
+    	{
+    		logger.info("The exception of the add case request is:"+e.getMessage());  
+    		response.setCaseid(result.getId());
+    		response.setError(true);
+    		response.setErrormessage(e.getMessage());
+    		return response;
+    	}
+    	logger.info("The result of the add case request is:"+result.getId());   	
+    	
+    	
+    	response.setCaseid(result.getId());
+    	response.setError(false);
+    	response.setErrormessage("");
+    	return response;
+    	
+    	
     }
 
     

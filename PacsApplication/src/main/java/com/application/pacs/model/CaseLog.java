@@ -25,8 +25,8 @@ public class CaseLog extends DateAudit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Size(max = 30)
+
+   
     private Long case_id;
 
       
@@ -35,10 +35,10 @@ public class CaseLog extends DateAudit {
     
   
     @NotBlank
-    @Size(max = 200)
+    @Size(max = 500)
     private String logtext;
     
-    @NotBlank
+   
     @Enumerated(EnumType.STRING)
     private CaseStatus casestatus;
     
@@ -47,8 +47,8 @@ public class CaseLog extends DateAudit {
 
     }
 
-    public CaseLog(Long case_id, String loguser, String logtext, CaseStatus casestatus) {
-        this.case_id = case_id;
+    public CaseLog( String loguser, String logtext, CaseStatus casestatus) {
+      
         this.loguser=loguser;
         this.logtext = logtext;
         this.casestatus = casestatus;
