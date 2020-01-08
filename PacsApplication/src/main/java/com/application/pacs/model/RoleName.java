@@ -9,5 +9,6 @@ public enum  RoleName {
     ROLE_DOC_ASSISTANT,
     ROLE_UPLOADER,
     ROLE_REPORT_VIEWER,
+    ROLE_ASSIGNER,
     ROLE_ADMIN
 }

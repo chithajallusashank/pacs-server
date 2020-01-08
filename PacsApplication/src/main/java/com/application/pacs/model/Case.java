@@ -38,6 +38,9 @@ public class Case extends DateAudit {
     @Enumerated(EnumType.STRING)
     private CaseType casetype;
     
+    @Enumerated(EnumType.STRING)
+    private BodyPartType bodyparttype;
+    
     @Lob
     private String filereport;
     
@@ -54,18 +57,24 @@ public class Case extends DateAudit {
     
 
     private Boolean emergency;
-   
+
+    //Cases assignement table
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="user_id", nullable=true)
+    private User user = new User();
     
     @OneToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "case_id")
     private Set<CaseLog> caselog = new HashSet<>();
     
 
+    
+
     public Case() {
 
     }
 
-    public Case(String patientname, String fileuri,CaseType casetype, String patienthistory, String patientid,Boolean emergency) {
+    public Case(String patientname, String fileuri,CaseType casetype,BodyPartType bodyparttype, String patienthistory, String patientid,Boolean emergency) {
         this.patientname = patientname;
         this.fileuri = fileuri;
         this.casetype=casetype;
@@ -73,6 +82,7 @@ public class Case extends DateAudit {
         this.patientid = patientid;
         this.emergency=emergency;
         this.casestatus=CaseStatus.CASESTATUS_OPEN;
+        this.bodyparttype=bodyparttype;
        
     }
 
@@ -124,6 +134,15 @@ public class Case extends DateAudit {
         this.casetype = casetype;
     }
     
+    public BodyPartType getBodyparttype() {
+        return bodyparttype;
+    }
+
+    public void setBodyparttype(BodyPartType bodyparttype) {
+        this.bodyparttype = bodyparttype;
+    }
+    
+    
     public String getFilereport() {
         return filereport;
     }
@@ -163,11 +182,16 @@ public class Case extends DateAudit {
     	
     }
     
-    
     public Set<CaseLog> getCaselogs() {
         return caselog;
     }
 
-  
-	
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+    	
+        this.user = user;
+    }
 }

@@ -5,6 +5,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 import com.application.pacs.model.BodyPartType;
+import com.application.pacs.model.CaseStatus;
 import com.application.pacs.model.CaseType;
 
 
@@ -13,13 +14,14 @@ import com.application.pacs.model.CaseType;
 
 
 
-public class AddCase {
-	 @NotBlank
-	    @Size(min = 1, max = 200)
+public class CaseResponse {
+	 
 	    private String patientname;
+	    
+	    public CaseResponse() {
+		}
 
-	    @NotBlank
-	    @Size(min = 1, max = 500)
+	   
 	    private String fileuri;
 
 	   
@@ -27,11 +29,29 @@ public class AddCase {
 	    
 	    private BodyPartType bodyparttype;
 	    
-	 
+	    private String assignedto;
 	    private String patientid;
 	    private String patienthistory;
 	    private Boolean emergency;
+	    private CaseStatus casestatus;
 
+	    public String getAssignedto() {
+	        return assignedto;
+	    }
+
+	    public void setAssignedto(String assignedto) {
+	        this.assignedto = assignedto;
+	    } 
+	    
+	    
+	    public CaseStatus getCasestatus() {
+	        return casestatus;
+	    }
+
+	    public void setCasestatus(CaseStatus casestatus) {
+	        this.casestatus = casestatus;
+	    } 
+	    
 	    public String getPatienthistory() {
 	        return patienthistory;
 	    }

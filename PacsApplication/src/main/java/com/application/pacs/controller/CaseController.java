@@ -12,7 +12,9 @@ import com.application.pacs.model.Role;
 import com.application.pacs.model.RoleName;
 import com.application.pacs.model.User;
 import com.application.pacs.payload.ApiResponse;
+import com.application.pacs.payload.PagedResponse;
 import com.application.pacs.payload.cases.AddCaseResponse;
+import com.application.pacs.payload.cases.CaseResponse;
 import com.application.pacs.payload.cases.CaseTypes;
 import com.application.pacs.payload.users.UserSummary;
 import com.application.pacs.payload.organization.OrganizationCreateRequest;
@@ -24,12 +26,14 @@ import com.application.pacs.repository.CaseRepository;
 import com.application.pacs.repository.OrganizationRepository;
 import com.application.pacs.security.CurrentUser;
 import com.application.pacs.security.UserPrincipal;
+import com.application.pacs.service.CaseService;
 import com.application.pacs.util.AppConstants;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -48,6 +52,9 @@ public class CaseController {
 
     @Autowired
     private CaseRepository caseRepository;
+    
+    @Autowired
+    private CaseService caseService;
 
     private Case caseinfo;
 
@@ -61,12 +68,22 @@ public class CaseController {
     	return Arrays.asList(CaseType.values());
     }
     
+    @GetMapping("/getAllCases")
+    @PreAuthorize("hasRole('USER')")
+    public PagedResponse<CaseResponse> getAllCases(@CurrentUser UserPrincipal currentUser,@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
+                                                @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size)
+    {
+    	logger.info("Called service to retrieve cases for user"+currentUser.getUsername());
+    	return caseService.getCasesForUser(currentUser, page, size);
+    }
+    
+    
     
     @PostMapping("/addcase")
     @PreAuthorize("hasRole('USER')")
     public AddCaseResponse AddCase(@CurrentUser UserPrincipal currentUser,@Valid @RequestBody AddCase addCaseRequest) {
     	logger.info("User - "+currentUser.getUsername()+" - posted add case request for "+addCaseRequest.getCasetype());   	
-    	Case newCase=new Case(addCaseRequest.getPatientname(), addCaseRequest.getFileuri(),addCaseRequest.getCasetype(), addCaseRequest.getPatienthistory(), addCaseRequest.getPatientid(),addCaseRequest.getEmergency());
+    	Case newCase=new Case(addCaseRequest.getPatientname(), addCaseRequest.getFileuri(),addCaseRequest.getCasetype(),addCaseRequest.getBodyparttype(), addCaseRequest.getPatienthistory(), addCaseRequest.getPatientid(),addCaseRequest.getEmergency());
     	AddCaseResponse response= new AddCaseResponse();
     	Case result = new Case();
     	CaseLog caselog=new CaseLog(currentUser.getUsername(),"Added a new case", CaseStatus.CASESTATUS_OPEN);
