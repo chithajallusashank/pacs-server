@@ -32,10 +32,10 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
 	Page<Case> findByUser_IdIn(List<Long> userid,Pageable pageable );
 
 	
+	@Modifying
+	@Query(value="update cases s set s.user_id = :caseids where u.id in (:caseids)")
+	int assignCasesToUser(@Param("userid") Long userid,@Param("caseids") List<Long> caseids) ;
 	
-
-	
-
 	
 	
 }

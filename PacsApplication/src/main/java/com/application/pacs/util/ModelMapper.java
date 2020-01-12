@@ -21,6 +21,7 @@ public class ModelMapper {
 	private static final Logger logger = LoggerFactory.getLogger(ModelMapper.class);
     public static CaseResponse mapCaseToCaseResponse(Case cases) {
     	CaseResponse caseResponse = new CaseResponse();
+    	caseResponse.setCaseid(cases.getId());
         caseResponse.setAssignedto(cases.getUser()!= null? cases.getUser().getName() : "NA");
         caseResponse.setBodyparttype(cases.getBodyparttype());
         caseResponse.setCasestatus(cases.getCasestatus());

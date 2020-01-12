@@ -14,6 +14,7 @@ import com.application.pacs.model.User;
 import com.application.pacs.payload.ApiResponse;
 import com.application.pacs.payload.PagedResponse;
 import com.application.pacs.payload.cases.AddCaseResponse;
+import com.application.pacs.payload.cases.AssignCase;
 import com.application.pacs.payload.cases.CaseResponse;
 import com.application.pacs.payload.cases.CaseTypes;
 import com.application.pacs.payload.users.UserSummary;
@@ -77,6 +78,16 @@ public class CaseController {
     	return caseService.getCasesForUser(currentUser, page, size);
     }
     
+    
+    @PostMapping("/casetoassign")
+    @PreAuthorize("hasRole('USER')")
+    public PagedResponse<CaseResponse> CasesToAssign(@CurrentUser UserPrincipal currentUser,@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
+            @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size,@Valid @RequestBody AssignCase assignCaseRequest) {
+    	
+    	
+    	return caseService.assignCasesToUser(assignCaseRequest.getUser(),assignCaseRequest.getCaseIds(), page, size);
+    	
+    }
     
     
     @PostMapping("/addcase")

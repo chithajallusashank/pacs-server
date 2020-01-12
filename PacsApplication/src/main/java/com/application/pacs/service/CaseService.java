@@ -7,6 +7,8 @@ import com.application.pacs.payload.PagedResponse;
 import com.application.pacs.payload.PollRequest;
 import com.application.pacs.payload.PollResponse;
 import com.application.pacs.payload.VoteRequest;
+import com.application.pacs.payload.cases.AssignCaseIdRequest;
+import com.application.pacs.payload.cases.AssignUserRequest;
 import com.application.pacs.payload.cases.CaseResponse;
 import com.application.pacs.repository.CaseRepository;
 import com.application.pacs.repository.PollRepository;
@@ -34,6 +36,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -41,6 +44,8 @@ import java.util.stream.Collectors;
 @Service
 public class CaseService {
 
+	
+	
     @Autowired
     private CaseRepository caseRepository;
 
@@ -107,6 +112,30 @@ public class CaseService {
     }
     
     
+    
+    public PagedResponse<CaseResponse>  assignCasesToUser(List<AssignUserRequest> assignToUser,List<AssignCaseIdRequest> caseIdsToAssign, int page, int size){
+    	
+    	 User user = userRepository.findByUsername(assignToUser.get(0).getUserName()).orElseThrow(() -> new ResourceNotFoundException("User", "username", assignToUser.get(0).getUserName()));
+    	 List<Long> caseIds=new ArrayList<Long>();
+    	 for (AssignCaseIdRequest temp : caseIdsToAssign) {
+    		 
+    		 caseIds.add(temp.getCaseId());
+ 			//System.out.println(temp);
+ 		}
+    	
+    	int rowsUpdated= caseRepository.assignCasesToUser(user.getId(),caseIds);
+    	
+    	if(rowsUpdated==0)
+    	{
+    		throw new BadRequestException("No cases were found for assignment");
+    	}else
+    	{
+    		//What to do here?
+    	}
+    	
+    	return null;
+    	
+    }
 
     
     private void validatePageNumberAndSize(int page, int size) {

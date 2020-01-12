@@ -23,7 +23,7 @@ public class CaseResponse {
 
 	   
 	    private String fileuri;
-
+	    private Long caseid;
 	   
 	    private CaseType casetype;
 	    
@@ -42,7 +42,13 @@ public class CaseResponse {
 	    public void setAssignedto(String assignedto) {
 	        this.assignedto = assignedto;
 	    } 
-	    
+	    public Long getCaseid() {
+	        return caseid;
+	    }
+
+	    public void setCaseid(Long caseid) {
+	        this.caseid = caseid;
+	    } 
 	    
 	    public CaseStatus getCasestatus() {
 	        return casestatus;
