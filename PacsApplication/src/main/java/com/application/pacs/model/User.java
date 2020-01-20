@@ -90,6 +90,7 @@ public class User extends DateAudit {
         this.password = password;
         this.userenabled=userenabled;
         this.phonenumber = phonenumber;
+        
     }
 
     public Long getId() {

@@ -1,6 +1,11 @@
 package com.application.pacs.payload.security;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.validation.constraints.*;
+
+import com.application.pacs.model.CaseType;
+import com.application.pacs.model.RoleName;
 
 /**
  * Created by rajeevkumarsingh on 02/08/17.
@@ -24,13 +29,25 @@ public class SignUpRequest {
     @Email
     private String email;
     
- 
+    @Enumerated(EnumType.STRING)
+    private RoleName userrole;
+    
     private Long phonenumber;
 
     @NotBlank
     @Size(min = 6, max = 20)
     private String password;
 
+    
+    public RoleName getUserrole() {
+        return userrole;
+    }
+
+    public void setUserrole(RoleName userrole) {
+        this.userrole = userrole;
+    }
+    
+    
     public String getName() {
         return name;
     }

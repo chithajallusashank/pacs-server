@@ -15,6 +15,7 @@ import com.application.pacs.payload.ApiResponse;
 import com.application.pacs.payload.PagedResponse;
 import com.application.pacs.payload.cases.AddCaseResponse;
 import com.application.pacs.payload.cases.AssignCase;
+import com.application.pacs.payload.cases.AssigneeResponse;
 import com.application.pacs.payload.cases.CaseResponse;
 import com.application.pacs.payload.cases.CaseTypes;
 import com.application.pacs.payload.users.UserSummary;
@@ -76,6 +77,14 @@ public class CaseController {
     {
     	logger.info("Called service to retrieve cases for user"+currentUser.getUsername());
     	return caseService.getCasesForUser(currentUser, page, size);
+    }
+    
+    @GetMapping("/getAssigneesList")
+    @PreAuthorize("hasRole('USER')")
+    public List<AssigneeResponse> getAssigneesList(@CurrentUser UserPrincipal currentUser)
+    {
+    	logger.info("Called service to retrieve assignees for user"+currentUser.getUsername());
+    	return caseService.getAssigneesForUser(currentUser);
     }
     
     

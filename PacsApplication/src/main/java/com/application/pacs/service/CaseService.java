@@ -9,6 +9,7 @@ import com.application.pacs.payload.PollResponse;
 import com.application.pacs.payload.VoteRequest;
 import com.application.pacs.payload.cases.AssignCaseIdRequest;
 import com.application.pacs.payload.cases.AssignUserRequest;
+import com.application.pacs.payload.cases.AssigneeResponse;
 import com.application.pacs.payload.cases.CaseResponse;
 import com.application.pacs.repository.CaseRepository;
 import com.application.pacs.repository.PollRepository;
@@ -111,7 +112,35 @@ public class CaseService {
         		cases.getSize(), cases.getTotalElements(), cases.getTotalPages(), cases.isLast());
     }
     
-    
+    public List<AssigneeResponse> getAssigneesForUser(UserPrincipal currentUser)
+    {
+    	String username=currentUser.getUsername();
+    	List <AssigneeResponse> assignees=new ArrayList<AssigneeResponse>();
+    	AssigneeResponse assignee=new AssigneeResponse();
+    	assignee.setName("ASSIGNEE NAME1");
+    	assignee.setUsername("ASGN1");
+    	assignee.setAssignedcasescount(10);
+    	assignees.add(assignee);
+    	assignee=new AssigneeResponse();
+    	assignee.setName("ASSIGNEE NAME2");
+    	assignee.setUsername("ASGN2");
+    	assignee.setAssignedcasescount(30);
+    	assignees.add(assignee);
+    	
+    	for(int i=3;i<15;i++)
+    	{
+    	assignee=new AssigneeResponse();
+    	assignee.setName("ASSIGNEE NAME"+i);
+    	assignee.setUsername("ASGN"+i);
+    	assignee.setAssignedcasescount(19+i);
+    	assignees.add(assignee);
+    	}
+		/*
+		 * User user=userRepository.findAssigneesForUser(username) .orElseThrow(() ->
+		 * new ResourceNotFoundException("User", "username", username));
+		 */
+    	return assignees;
+    }
     
     public PagedResponse<CaseResponse>  assignCasesToUser(List<AssignUserRequest> assignToUser,List<AssignCaseIdRequest> caseIdsToAssign, int page, int size){
     	

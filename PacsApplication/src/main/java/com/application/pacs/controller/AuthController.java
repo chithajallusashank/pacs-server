@@ -131,6 +131,8 @@ public class AuthController {
 
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
+		
+		
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
 			return new ResponseEntity(new ApiResponse(false, "Username is already taken!"), HttpStatus.BAD_REQUEST);
 		}
@@ -162,8 +164,8 @@ public class AuthController {
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-		Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
-				.orElseThrow(() -> new AppException("User Role not set."));
+		Role userRole = roleRepository.findByName(signUpRequest.getUserrole())
+				.orElseThrow(() -> new AppException("User Role does not exist."));
 
 		user.setRoles(Collections.singleton(userRole));
 		Organization org = organizationRepository.findByOrganizationcode(signUpRequest.getOrganizationcode())
