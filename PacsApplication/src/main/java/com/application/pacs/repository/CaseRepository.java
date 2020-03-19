@@ -27,13 +27,13 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
 
 	Optional<Case> findByCasestatus(String casestatus);
 	
-	Page<Case> findByCasestatusIn(List<CaseStatus> casestatus, Pageable pageable);
+	Page<Case> findByCasestatusInAndOrg_Id(List<CaseStatus> casestatus,Long OrgId, Pageable pageable);
 	
-	Page<Case> findByUser_IdIn(List<Long> userid,Pageable pageable );
+	Page<Case> findByUser_IdInAndOrg_Id(List<Long> userid,Long OrgId,Pageable pageable );
 
 	@Transactional
 	@Modifying(clearAutomatically = true)
-	@Query(value="update cases s set s.user_id = :userid where u.id in (:caseids)",
+	@Query(value="update cases s set s.user_id = :userid where s.id in (:caseids)",
             nativeQuery = true)
 	int assignCasesToUser(@Param("userid") Long userid,@Param("caseids") List<Long> caseids) ;
 	

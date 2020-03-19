@@ -37,6 +37,7 @@ public class SignUpRequest {
     @NotBlank
     @Size(min = 6, max = 20)
     private String password;
+    private String supervisorname;
 
     
     public RoleName getUserrole() {
@@ -64,6 +65,14 @@ public class SignUpRequest {
         this.username = username;
     }
 
+    
+    public String getSupervisorname() {
+        return supervisorname;
+    }
+
+    public void setSupervisorname(String supervisorname) {
+        this.supervisorname = supervisorname;
+    }
     
     public String getOrganizationcode() {
         return organizationcode;

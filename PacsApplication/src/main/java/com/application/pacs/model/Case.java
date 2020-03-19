@@ -12,6 +12,7 @@ import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -67,14 +68,16 @@ public class Case extends DateAudit {
     @JoinColumn(name = "case_id")
     private Set<CaseLog> caselog = new HashSet<>();
     
-
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @JoinColumn(name = "organization_id")
+    private Organization org = new Organization();
     
 
     public Case() {
 
     }
 
-    public Case(String patientname, String fileuri,CaseType casetype,BodyPartType bodyparttype, String patienthistory, String patientid,Boolean emergency) {
+    public Case(String patientname, String fileuri,CaseType casetype,BodyPartType bodyparttype, String patienthistory, String patientid,Boolean emergency,Organization organization ) {
         this.patientname = patientname;
         this.fileuri = fileuri;
         this.casetype=casetype;
@@ -83,6 +86,8 @@ public class Case extends DateAudit {
         this.emergency=emergency;
         this.casestatus=CaseStatus.CASESTATUS_OPEN;
         this.bodyparttype=bodyparttype;
+        this.org=organization;
+        this.user=null;
        
     }
 
@@ -193,5 +198,14 @@ public class Case extends DateAudit {
     public void setUser(User user) {
     	
         this.user = user;
+    }
+    
+    public Organization getOrganization() {
+        return org;
+    }
+
+    public void setOrganization(Organization organization) {
+    	
+        this.org = organization;
     }
 }

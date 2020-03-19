@@ -8,6 +8,8 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -77,6 +79,14 @@ public class User extends DateAudit {
             inverseJoinColumns = @JoinColumn(name = "organization_id"))
     private Organization organization = new Organization();
     
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "supervisor", 
+            joinColumns =  @JoinColumn(name = "subordinate_id", referencedColumnName = "id") , 
+            inverseJoinColumns =  @JoinColumn(name = "supervisor_id", referencedColumnName = "id") )
+    private Set<User> supervisors=new HashSet<User>();
+
+    @ManyToMany (mappedBy = "supervisors" )
+    private Set<User> subordinates=new HashSet<User>();
 
     public User() {
 
@@ -90,6 +100,7 @@ public class User extends DateAudit {
         this.password = password;
         this.userenabled=userenabled;
         this.phonenumber = phonenumber;
+       
         
     }
 
@@ -163,6 +174,25 @@ public class User extends DateAudit {
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
+    
+    public Set<User> getSupervisors() {
+        return supervisors;
+    }
+
+    public void setSupervisors(Set<User> supervisors) {
+        this.supervisors = supervisors;
+    }
+    
+    public Set<User> getSubordinates() {
+        return subordinates;
+    }
+
+    public void setSubordinates(Set<User> subordinates) {
+        this.subordinates = subordinates;
+    }
+    
+    
+    
     public Organization getOrganization() {
         return organization;
     }

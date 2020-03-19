@@ -3,6 +3,7 @@ package com.application.pacs.controller;
 import com.application.pacs.exception.AppException;
 import com.application.pacs.payload.cases.AddCase;
 import com.application.pacs.exception.ResourceNotFoundException;
+
 import com.application.pacs.model.Case;
 import com.application.pacs.model.CaseLog;
 import com.application.pacs.model.CaseStatus;
@@ -15,6 +16,7 @@ import com.application.pacs.payload.ApiResponse;
 import com.application.pacs.payload.PagedResponse;
 import com.application.pacs.payload.cases.AddCaseResponse;
 import com.application.pacs.payload.cases.AssignCase;
+import com.application.pacs.payload.cases.AssignCaseList;
 import com.application.pacs.payload.cases.AssigneeResponse;
 import com.application.pacs.payload.cases.CaseResponse;
 import com.application.pacs.payload.cases.CaseTypes;
@@ -35,6 +37,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -57,6 +60,9 @@ public class CaseController {
     
     @Autowired
     private CaseService caseService;
+    
+    @Autowired
+    private OrganizationRepository orgRepo;
 
     private Case caseinfo;
 
@@ -71,7 +77,7 @@ public class CaseController {
     }
     
     @GetMapping("/getAllCases")
-    @PreAuthorize("hasRole('USER')")
+  //  @PreAuthorize("hasRole('ASSIGNER')")
     public PagedResponse<CaseResponse> getAllCases(@CurrentUser UserPrincipal currentUser,@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
                                                 @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size)
     {
@@ -80,37 +86,63 @@ public class CaseController {
     }
     
     @GetMapping("/getAssigneesList")
-    @PreAuthorize("hasRole('USER')")
-    public List<AssigneeResponse> getAssigneesList(@CurrentUser UserPrincipal currentUser)
+    //@PreAuthorize("hasRole('USER')")
+    public List<AssigneeResponse> getAssigneesList(@CurrentUser UserPrincipal currentUser,@RequestParam(value = "assigneetype") RoleName assigneeType)
     {
     	logger.info("Called service to retrieve assignees for user"+currentUser.getUsername());
-    	return caseService.getAssigneesForUser(currentUser);
+    	if(assigneeType.equals(RoleName.ROLE_RADIOLOGIST))
+    	{
+    		logger.debug("Assignees requested for type: radiologists");
+    		return caseService.getAssigneesForUser(currentUser,RoleName.ROLE_RADIOLOGIST);
+    	}
+    	
+    	else if(assigneeType.equals(RoleName.ROLE_ASSIGNER))
+    	{
+    		logger.debug("Assignees requested for type: assigners");
+    		return caseService.getAssigneesForUser(currentUser,RoleName.ROLE_ASSIGNER);
+    	}
+    	else
+    	{
+    		
+    			return null;
+    		
+    	}
+    	
+    	
     }
     
     
-    @PostMapping("/casetoassign")
-    @PreAuthorize("hasRole('USER')")
+    @PostMapping("/casestoassign")
+    @PreAuthorize("hasRole('USER')||hasRole('ADMIN')")
     public PagedResponse<CaseResponse> CasesToAssign(@CurrentUser UserPrincipal currentUser,@RequestParam(value = "page", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER) int page,
-            @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size,@Valid @RequestBody AssignCase assignCaseRequest) {
+            @RequestParam(value = "size", defaultValue = AppConstants.DEFAULT_PAGE_SIZE) int size,@Valid @RequestBody List<AssignCase> assignCaseRequest) {
     	
-    	
-    	return caseService.assignCasesToUser(assignCaseRequest.getUser(),assignCaseRequest.getCaseIds(), page, size);
+    logger.debug("Assign cases requested");
+    	return caseService.assignCasesToUser(currentUser,assignCaseRequest, page, size); 
     	
     }
     
     
     @PostMapping("/addcase")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('REPORT_UPLOADER')||hasRole('ADMIN')")
     public AddCaseResponse AddCase(@CurrentUser UserPrincipal currentUser,@Valid @RequestBody AddCase addCaseRequest) {
-    	logger.info("User - "+currentUser.getUsername()+" - posted add case request for "+addCaseRequest.getCasetype());   	
-    	Case newCase=new Case(addCaseRequest.getPatientname(), addCaseRequest.getFileuri(),addCaseRequest.getCasetype(),addCaseRequest.getBodyparttype(), addCaseRequest.getPatienthistory(), addCaseRequest.getPatientid(),addCaseRequest.getEmergency());
+    	logger.info("User - "+currentUser.getUsername()+" - posted add case request for "+addCaseRequest.getCasetype());
+    	
+    	Organization org;
+    	logger.info("here at 1");
+    	org=orgRepo.findByOrganizationcode(currentUser.getOrganizationcode()).get();
+    	logger.info("here at 2");
+    	Case newCase=new Case(addCaseRequest.getPatientname(), addCaseRequest.getFileuri(),addCaseRequest.getCasetype(),addCaseRequest.getBodyparttype(), addCaseRequest.getPatienthistory(), addCaseRequest.getPatientid(),addCaseRequest.getEmergency(),org);
     	AddCaseResponse response= new AddCaseResponse();
     	Case result = new Case();
+    	logger.info("here at 3");
     	CaseLog caselog=new CaseLog(currentUser.getUsername(),"Added a new case", CaseStatus.CASESTATUS_OPEN);
-    	
+    	logger.info("here at 4");
     	newCase.setCaselogs(Collections.singleton(caselog));
+    	logger.info("here at 5");
     	try {
     	 result = caseRepository.save(newCase);
+    	 logger.info("here at 6");
     	}catch (Exception e)
     	{
     		logger.info("The exception of the add case request is:"+e.getMessage());  

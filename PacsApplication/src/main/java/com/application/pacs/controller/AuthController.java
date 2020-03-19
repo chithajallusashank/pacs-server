@@ -73,6 +73,7 @@ public class AuthController {
 	@Autowired
 	OrganizationRepository organizationRepository;
 
+
 	@Autowired
 	RoleRepository roleRepository;
 
@@ -163,10 +164,15 @@ public class AuthController {
 																												// requests
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
-
+		logger.info("signup request User role  is" + signUpRequest.getUserrole());
 		Role userRole = roleRepository.findByName(signUpRequest.getUserrole())
-				.orElseThrow(() -> new AppException("User Role does not exist."));
-
+				.orElseThrow(() -> new AppException("User Role does not exist. Please contact administrator."));
+		
+		logger.info("signup request Supervisor name  is" + signUpRequest.getSupervisorname());
+		User supervisorUser=userRepository.findByUsername(signUpRequest.getSupervisorname()).get();
+		
+		user.setSupervisors(Collections.singleton(supervisorUser));
+		user.setSubordinates(Collections.singleton(user));
 		user.setRoles(Collections.singleton(userRole));
 		Organization org = organizationRepository.findByOrganizationcode(signUpRequest.getOrganizationcode())
 				.orElseThrow(() -> new AppException("Organization code not found."));

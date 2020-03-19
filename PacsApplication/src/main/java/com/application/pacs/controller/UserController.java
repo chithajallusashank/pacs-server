@@ -1,11 +1,14 @@
 package com.application.pacs.controller;
 
 import com.application.pacs.exception.ResourceNotFoundException;
+import com.application.pacs.model.RoleName;
 import com.application.pacs.model.User;
 import com.application.pacs.payload.ApiResponse;
 import com.application.pacs.payload.PagedResponse;
 import com.application.pacs.payload.PollResponse;
+import com.application.pacs.payload.cases.AssigneeResponse;
 import com.application.pacs.payload.users.UserProfile;
+import com.application.pacs.payload.users.SupervisorListResponse;
 import com.application.pacs.payload.users.UserIdentityAvailability;
 import com.application.pacs.payload.users.UserSummary;
 import com.application.pacs.repository.PollRepository;
@@ -17,6 +20,9 @@ import com.application.pacs.service.PollService;
 import com.application.pacs.util.AppConstants;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +62,38 @@ public class UserController {
     public UserIdentityAvailability checkUsernameAvailability(@RequestParam(value = "username") String username) {
         Boolean isAvailable = !userRepository.existsByUsername(username);
         return new UserIdentityAvailability(isAvailable);
+    }
+    
+    
+    @GetMapping("/user/getSupervisorListForOrg")
+    public List<SupervisorListResponse> getSupervisorListForOrg(@RequestParam(value = "orgValue") String orgValue) {
+    	logger.info("Finding the supervisors for the given organization: " +orgValue);
+       
+        List<User> supervisorList=userRepository.findByOrganizationcodeAndUserenabled(orgValue,true);
+    	List <SupervisorListResponse> supervisors=new ArrayList<SupervisorListResponse>();
+    	if(!(supervisorList.isEmpty()))
+    	{
+    		logger.info("Fetched some records");
+    	for (User obj : supervisorList) {
+    	   
+    		logger.info("Fetched assignee's name is:"+obj.getName());
+    		logger.debug("Fetched assignee's username is:"+ obj.getUsername());
+    		SupervisorListResponse supervisor=new SupervisorListResponse();
+    		supervisor.setName(obj.getName());
+    		supervisor.setUsername(obj.getUsername());
+    		supervisors.add(supervisor);
+    		
+    	}
+    	}
+    	else {
+    		logger.info("No records fetched");
+    		SupervisorListResponse supervisor=new SupervisorListResponse();
+    		supervisor.setName("No active supervisors found");
+    		supervisor.setUsername("");
+    		supervisors.add(supervisor);
+    	}
+    	return supervisors;
+       
     }
     
     

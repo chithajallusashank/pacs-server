@@ -7,11 +7,14 @@ import com.application.pacs.payload.PagedResponse;
 import com.application.pacs.payload.PollRequest;
 import com.application.pacs.payload.PollResponse;
 import com.application.pacs.payload.VoteRequest;
+import com.application.pacs.payload.cases.AssignCase;
 import com.application.pacs.payload.cases.AssignCaseIdRequest;
+import com.application.pacs.payload.cases.AssignCaseList;
 import com.application.pacs.payload.cases.AssignUserRequest;
 import com.application.pacs.payload.cases.AssigneeResponse;
 import com.application.pacs.payload.cases.CaseResponse;
 import com.application.pacs.repository.CaseRepository;
+import com.application.pacs.repository.OrganizationRepository;
 import com.application.pacs.repository.PollRepository;
 import com.application.pacs.repository.UserRepository;
 import com.application.pacs.repository.VoteRepository;
@@ -42,140 +45,147 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 @Service
 public class CaseService {
 
-	
-	
-    @Autowired
-    private CaseRepository caseRepository;
+	@Autowired
+	private CaseRepository caseRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+	@Autowired
+	private OrganizationRepository orgRepo;
 
-    private static final Logger logger = LoggerFactory.getLogger(CaseService.class);
+	@Autowired
+	private UserRepository userRepository;
 
-    public PagedResponse<CaseResponse> getCasesForUser(UserPrincipal currentUser, int page, int size) {
-        validatePageNumberAndSize(page, size);
+	private static final Logger logger = LoggerFactory.getLogger(CaseService.class);
 
-        String username=currentUser.getUsername();
-        // Retrieve cases
-        Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdAt");
-        
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
-        logger.info("Cases list requested by user:"+username);
+	public PagedResponse<CaseResponse> getCasesForUser(UserPrincipal currentUser, int page, int size) {
+		validatePageNumberAndSize(page, size);
 
-        Set<Role> userRoles=user.getRoles();
-    		if(userRoles.isEmpty())
-    		{
-    			logger.debug("User does not have any roles assigned:"+username);
-    			throw new BadRequestException("The user does not have any roles assigned. No cases can be viewed");
-    		}
-        			
-    		Page<Case> cases=null;
-    		for (Iterator<Role> it = userRoles.iterator(); it.hasNext(); ) {
-	        	Role f = it.next();
-	            if (f.equals(RoleName.ROLE_DOCTOR)||f.equals(RoleName.ROLE_DOC_ASSISTANT))
-	            {
-	            	List<Long> userids=Arrays.asList(user.getId());
-	            	cases = caseRepository.findByUser_IdIn(userids,pageable);
-	                logger.info("Cases list requested by a doctor/ doctor's assistant:"+username);
-	            }
-	            if (f.equals(RoleName.ROLE_ASSIGNER)||true) //remove true- only for testing
-	            {
-	            	List<CaseStatus> caseStatuses=Arrays.asList(CaseStatus.CASESTATUS_OPEN, CaseStatus.CASESTATUS_ASSIGNED, CaseStatus.CASESTATUS_INPROGRESS,CaseStatus.CASESTATUS_DOWNLOADED);
-	            	cases = caseRepository.findByCasestatusIn(caseStatuses,pageable);
-	            	if(cases.isEmpty())logger.info("returned cases are empty");
-	                logger.info("Cases list requested by a assigner"+username);
-	            }else {
-	            	logger.info("User role doesnt allow for viewing of the cases:"+username);
-	    			throw new BadRequestException("Your role doesnt allow for viewing of the cases");
-	            }
-        }
-        
-        
-        
-        
-        if(cases.getNumberOfElements() == 0) {
-            return new PagedResponse<>(Collections.emptyList(), cases.getNumber(),
-            		cases.getSize(), cases.getTotalElements(), cases.getTotalPages(), cases.isLast());
-        }
+		String username = currentUser.getUsername();
+		// Retrieve cases
+		Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdAt");
 
-        
-        List<CaseResponse> caseResponses = cases.stream().map(eachcase -> {
-            return ModelMapper.mapCaseToCaseResponse(eachcase);
-        }).collect(Collectors.toList());
-        
-        
-       return new PagedResponse<>(caseResponses, cases.getNumber(),
-        		cases.getSize(), cases.getTotalElements(), cases.getTotalPages(), cases.isLast());
-    }
-    
-    public List<AssigneeResponse> getAssigneesForUser(UserPrincipal currentUser)
-    {
-    	String username=currentUser.getUsername();
-    	List <AssigneeResponse> assignees=new ArrayList<AssigneeResponse>();
-    	AssigneeResponse assignee=new AssigneeResponse();
-    	assignee.setName("ASSIGNEE NAME1");
-    	assignee.setUsername("ASGN1");
-    	assignee.setAssignedcasescount(10);
-    	assignees.add(assignee);
-    	assignee=new AssigneeResponse();
-    	assignee.setName("ASSIGNEE NAME2");
-    	assignee.setUsername("ASGN2");
-    	assignee.setAssignedcasescount(30);
-    	assignees.add(assignee);
-    	
-    	for(int i=3;i<15;i++)
-    	{
-    	assignee=new AssigneeResponse();
-    	assignee.setName("ASSIGNEE NAME"+i);
-    	assignee.setUsername("ASGN"+i);
-    	assignee.setAssignedcasescount(19+i);
-    	assignees.add(assignee);
-    	}
-		/*
-		 * User user=userRepository.findAssigneesForUser(username) .orElseThrow(() ->
-		 * new ResourceNotFoundException("User", "username", username));
-		 */
-    	return assignees;
-    }
-    
-    public PagedResponse<CaseResponse>  assignCasesToUser(List<AssignUserRequest> assignToUser,List<AssignCaseIdRequest> caseIdsToAssign, int page, int size){
-    	
-    	 User user = userRepository.findByUsername(assignToUser.get(0).getUserName()).orElseThrow(() -> new ResourceNotFoundException("User", "username", assignToUser.get(0).getUserName()));
-    	 List<Long> caseIds=new ArrayList<Long>();
-    	 for (AssignCaseIdRequest temp : caseIdsToAssign) {
-    		 
-    		 caseIds.add(temp.getCaseId());
- 			//System.out.println(temp);
- 		}
-    	
-    	int rowsUpdated= caseRepository.assignCasesToUser(user.getId(),caseIds);
-    	
-    	if(rowsUpdated==0)
-    	{
-    		throw new BadRequestException("No cases were found for assignment");
-    	}else
-    	{
-    		//What to do here?
-    	}
-    	
-    	return null;
-    	
-    }
+		User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+		logger.info("Cases list requested by user:" + username);
 
-    
-    private void validatePageNumberAndSize(int page, int size) {
-        if(page < 0) {
-            throw new BadRequestException("Page number cannot be less than zero.");
-        }
+		Set<Role> userRoles = user.getRoles();
+		if (userRoles.isEmpty()) {
+			logger.debug("User does not have any roles assigned:" + username);
+			throw new BadRequestException("The user does not have any roles assigned. No cases can be viewed");
+		}
 
-        if(size > AppConstants.MAX_PAGE_SIZE) {
-            throw new BadRequestException("Page size must not be greater than " + AppConstants.MAX_PAGE_SIZE);
-        }
-    }
+		Page<Case> cases = null;
+		for (Iterator<Role> it = userRoles.iterator(); it.hasNext();) {
+			Role f = it.next();
+			logger.info("Cases list requested with role: " + f.getName());
+			if (f.getName().equals(RoleName.ROLE_RADIOLOGIST)) {
+				Organization org;
+				logger.info("here at 1");
+				org = orgRepo.findByOrganizationcode(currentUser.getOrganizationcode()).get();
+				List<Long> userids = Arrays.asList(user.getId());
+				cases = caseRepository.findByUser_IdInAndOrg_Id(userids, org.getId(), pageable);
+				logger.info("Cases list requested by a radiologist:" + username);
+			}
+			if (f.getName().equals(RoleName.ROLE_ASSIGNER) || f.getName().equals(RoleName.ROLE_ADMIN)) // remove true-
+																										// only for
+																										// testing
+			{
+				List<CaseStatus> caseStatuses = Arrays.asList(CaseStatus.CASESTATUS_OPEN,
+						CaseStatus.CASESTATUS_ASSIGNED, CaseStatus.CASESTATUS_INPROGRESS,
+						CaseStatus.CASESTATUS_DOWNLOADED);
 
-  
+				Organization org;
+				logger.info("here at 1");
+				org = orgRepo.findByOrganizationcode(currentUser.getOrganizationcode()).get();
+				cases = caseRepository.findByCasestatusInAndOrg_Id(caseStatuses, org.getId(), pageable);
+				if (cases.isEmpty())
+					logger.info("returned cases are empty");
+				logger.info("Cases list requested by a assigner" + username);
+			} else {
+				logger.info("User role doesnt allow for viewing of the cases:" + username);
+				throw new BadRequestException("Your role doesnt allow for viewing of the cases");
+			}
+		}
+
+		if (cases.getNumberOfElements() == 0) {
+			return new PagedResponse<>(Collections.emptyList(), cases.getNumber(), cases.getSize(),
+					cases.getTotalElements(), cases.getTotalPages(), cases.isLast());
+		}
+
+		List<CaseResponse> caseResponses = cases.stream().map(eachcase -> {
+			return ModelMapper.mapCaseToCaseResponse(eachcase);
+		}).collect(Collectors.toList());
+
+		return new PagedResponse<>(caseResponses, cases.getNumber(), cases.getSize(), cases.getTotalElements(),
+				cases.getTotalPages(), cases.isLast());
+	}
+
+	public List<AssigneeResponse> getAssigneesForUser(UserPrincipal currentUser, RoleName assigneeType) {
+		Long userId = currentUser.getId();
+		String organizationCode = currentUser.getOrganizationcode();
+
+		logger.info("Fetching assignee list for org:" + organizationCode + " and userId:" + userId);
+		logger.info("convert to string " + RoleName.ROLE_USER.toString());
+		List<Object[]> assigneeUsers = userRepository.getUsersInHierarchy(organizationCode, userId,
+				RoleName.ROLE_USER.toString());
+		List<AssigneeResponse> assignees = new ArrayList<AssigneeResponse>();
+		if (!(assigneeUsers.isEmpty())) {
+			logger.info("Fetched somne records");
+			for (Object[] obj : assigneeUsers) {
+
+				logger.info("Fetched assignee's username is:" + (String) obj[1]);
+				logger.debug("Fetched assignee's username is:" + (String) obj[1]);
+				AssigneeResponse assignee = new AssigneeResponse();
+				assignee.setName((String) obj[0]);
+				assignee.setUsername((String) obj[1]);
+				assignee.setAssignedcasescount(10);
+				assignees.add(assignee);
+			}
+		} else {
+			logger.info("No records fetched");
+			AssigneeResponse assignee = new AssigneeResponse();
+			assignee.setName("No Active Users Found");
+			assignee.setUsername(" ");
+			assignee.setAssignedcasescount(0);
+			assignees.add(assignee);
+		}
+		return assignees;
+	}
+
+	public PagedResponse<CaseResponse> assignCasesToUser(UserPrincipal currentUser,@Valid List<AssignCase> assignCaseRequest, int page,
+			int size) {
+		logger.info("Cases being assigned to user");
+		
+		  User user =userRepository.findByUsername(assignCaseRequest.get(0).getAssignee()).orElseThrow(() -> new ResourceNotFoundException("User", "username",assignCaseRequest.get(0).getAssignee()));
+		  List<Long> caseIds=new ArrayList<Long>(); 
+		  for (AssignCase temp : assignCaseRequest) {
+			  logger.info("Case id"+temp.getCaseid()+" being assigned to user:"+user.getId());
+		  caseIds.add(temp.getCaseid()); //System.out.println(temp);
+		  }
+		  
+		  int rowsUpdated= caseRepository.assignCasesToUser(user.getId(),caseIds);
+		  
+		  if(rowsUpdated==0) { throw new
+		  BadRequestException("No cases were found for assignment"); }else { //What to do here? 
+			  }
+		  
+		 
+		return getCasesForUser(currentUser, page, size);
+
+	}
+
+	private void validatePageNumberAndSize(int page, int size) {
+		if (page < 0) {
+			throw new BadRequestException("Page number cannot be less than zero.");
+		}
+
+		if (size > AppConstants.MAX_PAGE_SIZE) {
+			throw new BadRequestException("Page size must not be greater than " + AppConstants.MAX_PAGE_SIZE);
+		}
+	}
+
 }

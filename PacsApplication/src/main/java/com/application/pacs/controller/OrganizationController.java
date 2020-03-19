@@ -51,7 +51,7 @@ public class OrganizationController {
         return organizationSummary;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+  //  @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/checkOrganizationCodeAvailability")
     public OrganizationIdentityAvailability checkOrganizationcodeAvailability(@RequestParam(value = "organizationcode") String organizationcode,@CurrentUser UserPrincipal currentUser) {
     	logger.info("User - "+currentUser.getUsername()+" - Verifying organization code "+organizationcode+ " availability");
@@ -69,7 +69,7 @@ public class OrganizationController {
 	 * new OrganizationIdentityAvailability(isAvailable); }
 	 */
     
-    @PreAuthorize("hasRole('ADMIN')")
+   // @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/enabledisableOrganizationcode")
     public ResponseEntity<?> disableOrganizationcode(@RequestParam(value = "organizationcode") String organizationcode,
     												@RequestParam(value = "enable") Boolean enable) {
@@ -82,7 +82,7 @@ public class OrganizationController {
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+  //  @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/checkOrganizationEmailAvailability")
     public OrganizationIdentityAvailability checkEmailAvailability(@RequestParam(value = "email") String email,@CurrentUser UserPrincipal currentUser) {
     	logger.info("User - "+currentUser.getUsername()+" - Verifying email "+email+ " availability");
@@ -91,7 +91,7 @@ public class OrganizationController {
         return new OrganizationIdentityAvailability(isAvailable);
     }
     
-    @PreAuthorize("hasRole('ADMIN')")
+  //  @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/checkOrganizationPhonenumberAvailability")
     public OrganizationIdentityAvailability checkPhonenumberAvailability(@RequestParam(value = "phonenumber") Long phonenumber,@CurrentUser UserPrincipal currentUser) {
     	logger.info("User - "+currentUser.getUsername()+" - Verifying phonenumber "+phonenumber+ " availability");
@@ -122,7 +122,7 @@ public class OrganizationController {
     }
     
     
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/createorganization")
    public ResponseEntity<?> createOrganization(@Valid @RequestBody OrganizationCreateRequest orgCreateRequest,@CurrentUser UserPrincipal currentUser) {
     

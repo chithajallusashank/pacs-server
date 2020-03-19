@@ -8,28 +8,28 @@ import com.application.pacs.model.User;
 public class AssignCase {
 	
 	
-private List<AssignCaseIdRequest> caseid;
-private List<AssignUserRequest> user;
+	 private Long caseid;
+	  private String assignee;
 
+  
+	  public String getAssignee() {
+	    	
+	        return assignee;
+	    }
+
+	    public void setAssignee(String assignee) {
+	    
+	        this.assignee = assignee;
+	    }
     
 
-    
+	    public Long getCaseid() {
+	    	
+	        return caseid;
+	    }
 
-    public List<AssignCaseIdRequest> getCaseIds() {
-        return caseid;
-    }
-
-    public void setCaseIds(List<AssignCaseIdRequest> caseid) {
-        this.caseid = caseid;
-    }
-    
-    public List<AssignUserRequest> getUser() {
-		return user;
-    	
-    }
-
-    public void setUser(List<AssignUserRequest> user) {
-		this.user=user;
-    	
-    }
+	    public void setCaseid(Long caseid) {
+	    
+	        this.caseid = caseid;
+	    }
 }
