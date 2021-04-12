@@ -13,4 +13,7 @@ public class PollsApplicationTests {
 	public void contextLoads() {
 	}
 
+public static void printSomething(){
+	System.out.println("Something");
+}
 }
