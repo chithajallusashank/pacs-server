@@ -2,9 +2,7 @@ package com.application.pacs.payload;
 
 import javax.validation.constraints.NotBlank;
 
-/**
- * Created by rajeevkumarsingh on 02/08/17.
- */
+//Modified to create a new pull request
 public class LoginRequest {
     @NotBlank
     private String usernameOrEmail;
