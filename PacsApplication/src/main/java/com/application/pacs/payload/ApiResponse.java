@@ -1,7 +1,7 @@
 package com.application.pacs.payload;
 
 /**
- * Created by rajeevkumarsingh on 19/08/17.
+ * Updated to create a pull request
  */
 public class ApiResponse {
     private Boolean success;
