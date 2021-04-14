@@ -1,5 +1,5 @@
 package com.application.pacs;
-
+//Application development is mostly done    
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -9,7 +9,7 @@ import javax.annotation.PostConstruct;
 import java.util.TimeZone;
 
 @SpringBootApplication
-@EntityScan(basePackageClasses = {
+@EntityScan(basePackageClasses  = {
 		PacsApplication.class,
 		Jsr310JpaConverters.class
 })

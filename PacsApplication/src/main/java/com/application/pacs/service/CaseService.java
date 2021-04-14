@@ -158,22 +158,29 @@ public class CaseService {
 
 	public PagedResponse<CaseResponse> assignCasesToUser(UserPrincipal currentUser,@Valid List<AssignCase> assignCaseRequest, int page,
 			int size) {
+		 int rowsUpdated=0;
 		logger.info("Cases being assigned to user");
-		
-		  User user =userRepository.findByUsername(assignCaseRequest.get(0).getAssignee()).orElseThrow(() -> new ResourceNotFoundException("User", "username",assignCaseRequest.get(0).getAssignee()));
-		  List<Long> caseIds=new ArrayList<Long>(); 
+		 List<Long> caseIds=new ArrayList<Long>(); 
 		  for (AssignCase temp : assignCaseRequest) {
-			  logger.info("Case id"+temp.getCaseid()+" being assigned to user:"+user.getId());
+			  
 		  caseIds.add(temp.getCaseid()); //System.out.println(temp);
 		  }
+		if(assignCaseRequest.get(0).getAssignee().equalsIgnoreCase("unassign"))
+		{
+			logger.info("Unassigning the cases");
+			 rowsUpdated= caseRepository.assignCasesToUser(caseIds);
+		}else {
+			//logger.info("Case id"+temp.getCaseid()+" being assigned to user:"+user.getId());
+		  User user =userRepository.findByUsername(assignCaseRequest.get(0).getAssignee()).orElseThrow(() -> new ResourceNotFoundException("User", "username",assignCaseRequest.get(0).getAssignee()));
+		 
 		  
-		  int rowsUpdated= caseRepository.assignCasesToUser(user.getId(),caseIds);
-		  
+		   rowsUpdated= caseRepository.assignCasesToUser(user.getId(),caseIds);
+		}
 		  if(rowsUpdated==0) { throw new
 		  BadRequestException("No cases were found for assignment"); }else { //What to do here? 
 			  }
 		  
-		 
+		
 		return getCasesForUser(currentUser, page, size);
 
 	}

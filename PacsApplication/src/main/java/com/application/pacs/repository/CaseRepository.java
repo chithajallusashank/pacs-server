@@ -38,5 +38,11 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
 	int assignCasesToUser(@Param("userid") Long userid,@Param("caseids") List<Long> caseids) ;
 	
 	
+	@Transactional
+	@Modifying(clearAutomatically = true)
+	@Query(value="update cases s set s.user_id = null where s.id in (:caseids)",
+            nativeQuery = true)
+	int assignCasesToUser(@Param("caseids") List<Long> caseids) ;
+	
 	
 }
