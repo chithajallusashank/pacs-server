@@ -18,12 +18,16 @@ import com.application.pacs.security.CurrentUser;
 import com.application.pacs.security.UserPrincipal;
 import com.application.pacs.service.PollService;
 import com.application.pacs.util.AppConstants;
+<<<<<<< HEAD
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+=======
+//updated file with comments to be committed
+>>>>>>> branch 'master' of https://github.com/pacsapplication/pacs-server
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
